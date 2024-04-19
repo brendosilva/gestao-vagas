@@ -1,6 +1,7 @@
 package com.brendosilva.gestao_vagas.modules.company.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -16,6 +17,8 @@ public class JobEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private String benefits;
+
+    @NotBlank(message = "O campo [LEVEL] é obrigatório")
     private String level;
     private String description;
 
@@ -23,7 +26,7 @@ public class JobEntity {
     @JoinColumn(name = "company_id", insertable = false, updatable = false)
     private CompanyEntity company;
 
-    @Column(name = "company_id")
+    @Column(name = "company_id", nullable = false)
     private UUID companyId;
 
     @CreationTimestamp
