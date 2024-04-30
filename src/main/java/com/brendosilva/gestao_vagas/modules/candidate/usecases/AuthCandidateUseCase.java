@@ -27,6 +27,7 @@ public class AuthCandidateUseCase {
     @Value("${security.token.secret.candidate}")
     private String secretKey;
     public AuthCandidateResponseDTO execute(AuthCandidateRequetDTO dto) throws AuthenticationException {
+        var expiresIn = Instant.now().plus(Duration.ofMinutes(10));
         var candidate = candidateRepository.findByUsername(dto.username())
                 .orElseThrow(() -> new UsernameNotFoundException("username / password not found"));
         var matchers = passwordEncoder.matches(dto.password(), candidate.getPassword());
@@ -37,11 +38,14 @@ public class AuthCandidateUseCase {
         var token = JWT
                 .create()
                 .withIssuer("javagas")
-                .withExpiresAt(Instant.now().plus(Duration.ofMinutes(10)))
+                .withExpiresAt(expiresIn)
                 .withClaim("roles", List.of("CANDIDATE"))
                 .withSubject(candidate.getId().toString())
                 .sign(algorithm);
 
-        return AuthCandidateResponseDTO.builder().access_token(token).build();
+        return AuthCandidateResponseDTO.builder()
+                .access_token(token)
+                .expires_in(expiresIn.toEpochMilli())
+                .build();
     }
 }

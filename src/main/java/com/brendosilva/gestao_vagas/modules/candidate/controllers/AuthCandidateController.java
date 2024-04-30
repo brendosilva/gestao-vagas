@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/candidate")
 @RequiredArgsConstructor
 public class AuthCandidateController {
     private final AuthCandidateUseCase authCandidateUseCase;
 
-    @PostMapping("/candidate")
+    @PostMapping("/auth")
     public ResponseEntity<Object>  auth(@RequestBody AuthCandidateRequetDTO dto){
         try {
             var token =  authCandidateUseCase.execute(dto);
