@@ -17,15 +17,17 @@ import javax.naming.AuthenticationException;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthCompanyController {
-
     private final AuthCompanyUseCase authCompanyUseCase;
+
+
     @PostMapping("/company")
-    public ResponseEntity<Object> create(@RequestBody AuthCompanyDTO authCompanyDTO) {
+    public ResponseEntity<Object> create (@RequestBody AuthCompanyDTO dto) {
         try {
-            var result = this.authCompanyUseCase.execute(authCompanyDTO);
+            var result = this.authCompanyUseCase.execute(dto);
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
+
 }

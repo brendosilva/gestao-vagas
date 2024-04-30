@@ -6,7 +6,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -16,26 +15,24 @@ import java.io.IOException;
 import java.util.Collections;
 
 @Component
+@RequiredArgsConstructor
 public class SecurityFilter extends OncePerRequestFilter {
-
-    @Autowired
-    private JWTProvider provider;
-
+    private final JWTProvider jwtProvider;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         SecurityContextHolder.getContext().setAuthentication(null);
-        var header = request.getHeader("Authorization");
-        if (header != null) {
-            String subjectToken = this.provider.validateToken(header);
-            if(subjectToken.isEmpty()){
+        String header = request.getHeader("Authorization");
+        if(header != null ){
+            var subject = this.jwtProvider.validateToken(header);
+            if(subject.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
-            request.setAttribute("company_id", subjectToken);
+            request.setAttribute("company_id", subject);
             UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(subjectToken, null, Collections.emptyList());
+                    new UsernamePasswordAuthenticationToken(subject, null, Collections.emptyList());
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(request,response); // repassando para o controller
     }
 }

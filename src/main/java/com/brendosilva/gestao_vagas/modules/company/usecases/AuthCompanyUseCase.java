@@ -20,21 +20,20 @@ public class AuthCompanyUseCase {
     private final CompanyRepository companyRepository;
     private final PasswordEncoder passwordEncoder;
     @Value("${security.token.secret}")
-    private String secret;
-    public String execute (AuthCompanyDTO authCompanyDTO) throws AuthenticationException {
+    private String secretKey;
+    public String execute(AuthCompanyDTO authCompanyDTO) throws AuthenticationException {
         var company = this.companyRepository.findByUsername(authCompanyDTO.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("username/password incorrect"));
-
+                .orElseThrow(() -> new UsernameNotFoundException("username / password not found"));
         var matches = this.passwordEncoder.matches(authCompanyDTO.getPassword(), company.getPassword());
-
         if (!matches) {
             throw new AuthenticationException();
         }
-        Algorithm algorithm = Algorithm.HMAC256(secret);
-
-        return JWT.create().withIssuer("brendosilva")
-                .withExpiresAt(Instant.now().plus(Duration.ofHours(2)))
+        Algorithm algorithm = Algorithm.HMAC256(secretKey);
+        var token = JWT.create().withIssuer("javagas")
                 .withSubject(company.getId().toString())
+                .withExpiresAt(Instant.now().plus(Duration.ofHours(2)))
                 .sign(algorithm);
+        return token;
+
     }
 }
