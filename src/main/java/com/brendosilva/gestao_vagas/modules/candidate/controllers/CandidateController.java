@@ -4,6 +4,7 @@ import com.brendosilva.gestao_vagas.exceptions.UserFoundException;
 import com.brendosilva.gestao_vagas.modules.candidate.dto.ProfileCandidateResponseDTO;
 import com.brendosilva.gestao_vagas.modules.candidate.entities.CandidateEntity;
 import com.brendosilva.gestao_vagas.modules.candidate.repositories.CandidateRepository;
+import com.brendosilva.gestao_vagas.modules.candidate.usecases.ApplyJobCandidateUseCase;
 import com.brendosilva.gestao_vagas.modules.candidate.usecases.CreateCandidateUseCase;
 import com.brendosilva.gestao_vagas.modules.candidate.usecases.ListAllJobsByFilterUserCase;
 import com.brendosilva.gestao_vagas.modules.candidate.usecases.ProfileCandidateUseCase;
@@ -33,6 +34,7 @@ public class CandidateController {
     private final CreateCandidateUseCase createCandidateUseCase;
     private final ProfileCandidateUseCase profileCandidateUseCase;
     private final ListAllJobsByFilterUserCase listAllJobsByFilterUserCase;
+    private final ApplyJobCandidateUseCase applyJobCandidateUseCase;
     @PostMapping("/")
     @Tag(name = "Candidate", description = "Informações do candidate")
     @Operation(summary = "Criação do usuario", description = "Método responsavel pela criação do usuário")
@@ -93,5 +95,21 @@ public class CandidateController {
     public List<JobEntity> getJobsByFilter(@RequestParam String filter) {
         return this.listAllJobsByFilterUserCase.execute(filter);
 
+    }
+
+
+    @PostMapping("/job/apply")
+    @Tag(name = "Candidate", description = "Informações do candidate")
+    @Operation(summary = "Inscrição do candidato a uma vaga", description = "Método responsavel por realizar inscrição do candidato a uma vaga")
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @SecurityRequirement(name = "jwt_auth")
+    public ResponseEntity<Object> applyJob(@RequestBody UUID idJob, HttpServletRequest request) {
+        var idCandidate = request.getAttribute("candidate_id");
+        try {
+            var result = this.applyJobCandidateUseCase.execute(UUID.fromString(idCandidate.toString()), idJob);
+            return ResponseEntity.ok().body(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
